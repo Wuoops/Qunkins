@@ -1,0 +1,38 @@
+FROM node:20-alpine
+
+# Install build dependencies for native modules
+RUN apk add --no-cache python3 make g++ git
+
+WORKDIR /app
+
+# Copy workspace manifests for better layer caching
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.json ./
+COPY packages/core/package.json ./packages/core/package.json
+COPY packages/server/package.json ./packages/server/package.json
+COPY packages/web/package.json ./packages/web/package.json
+
+# Install dependencies with retry and mirror fallback
+RUN set -eux; \
+    export NODEJS_ORG_MIRROR=https://registry.npmmirror.com/-/binary/node/; \
+    export PYTHON=/usr/bin/python3; \
+    npm config set fetch-retries 5; \
+    npm config set fetch-retry-mintimeout 10000; \
+    npm config set fetch-retry-maxtimeout 120000; \
+    npm config set registry https://registry.npmmirror.com; \
+    (npm install -g pnpm@10.33.0 || (npm config set registry https://registry.npmjs.org && npm install -g pnpm@10.33.0)); \
+    pnpm config set registry https://registry.npmmirror.com; \
+    (pnpm install || (pnpm config set registry https://registry.npmjs.org && pnpm install)); \
+    cd node_modules/.pnpm/better-sqlite3@11.10.0/node_modules/better-sqlite3; \
+    npm run build-release; \
+    cd /app
+
+# Build all packages
+COPY packages/ ./packages/
+RUN pnpm --filter @qunkins/core build && \
+    pnpm --filter @qunkins/server build && \
+    pnpm --filter @qunkins/web build
+
+# Run tests
+RUN pnpm --filter @qunkins/core test
+
+CMD ["node", "packages/server/dist/index.js"]

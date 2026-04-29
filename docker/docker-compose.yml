@@ -1,0 +1,41 @@
+services:
+  qunkins:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: qunkins-server
+    network_mode: host
+    environment:
+      - NODE_ENV=production
+      - QUNKINS_SECRET=${QUNKINS_SECRET:-change-me-to-a-32-char-secret-key}
+      - QUNKINS_PORT=9800
+      - QUNKINS_DB_PATH=/app/data/qunkins.db
+      - QUNKINS_LOG_DIR=/app/logs
+      - QUNKINS_AUTH_ENABLED=${QUNKINS_AUTH_ENABLED:-false}
+      - QUNKINS_BOOTSTRAP_KEY=${QUNKINS_BOOTSTRAP_KEY:-}
+      - REDIS_HOST=127.0.0.1
+      - REDIS_PORT=6379
+      - FEISHU_APP_ID=${FEISHU_APP_ID:-}
+      - FEISHU_APP_SECRET=${FEISHU_APP_SECRET:-}
+    volumes:
+      - qunkins-data:/app/data
+      - qunkins-logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9800/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    container_name: qunkins-redis
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+
+volumes:
+  qunkins-data:
+  qunkins-logs:
+  redis-data:

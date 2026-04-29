@@ -1,0 +1,4 @@
+include:
+  - project: 'ci-config/central-ci-configs'
+    file: 
+      - '/.gitlab-ci.yml' 

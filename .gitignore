@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+.next/
+out/
+build/
+*.tsbuildinfo
+
+# Package manager artifacts
+package-lock.json
+
+# Environment
+.env
+.env.*
+.env.local
+.env.*.local
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+
+# Database
+*.db
+*.db-journal
+
+# Qunkins specific
+data/
+logs/
+
+# Worktrees (git)
+.worktrees/
+
+# Local config (contains secrets)
+.local/
+
+.turbo/
